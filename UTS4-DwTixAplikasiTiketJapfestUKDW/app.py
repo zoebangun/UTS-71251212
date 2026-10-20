@@ -9,7 +9,17 @@ def main():
     #   - siapkan logged_in = False, uname = None, id = None, role = None di st.session_state
     #     HANYA jika belum ada (supaya tidak ter-reset saat halaman dimuat ulang)
     #   - kalau sudah login (user membuka app.py / form login lagi) -> pindah ke "pages/event.py"
-
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+        st.session_state.uname = None
+        st.session_state.id = None
+        st.session_state.role = None
+    else:
+        if st.session_state.logged_in:
+            if st.session_state.role in ["Admin", "Staff"]:
+                st.switch_page("pages/dashboard.py")
+            else:
+                st.switch_page("pages/event.py")
     # kalau misal ada error itu gara gara versi streamlit minimal 1.52.0 ya
     # silahkan up pakai pip install --upgrade streamlit
     # page header (SUDAH JADI)
@@ -17,6 +27,7 @@ def main():
     st.write("*Silahkan masuk menggunakan akun DwTix anda*")
 
     user_by_name = user_data_by_username()
+
     # form (SUDAH JADI)
     uname = st.text_input(label="Username", required=True)
     pword = st.text_input(label="Password", type="password", required=True)
@@ -30,7 +41,18 @@ def main():
         # TODO (Soal 1c): arah setelah login berhasil
         #   - Admin dan Staff -> "pages/dashboard.py"
         #   - role lain       -> "pages/event.py"
-        pass
+        if uname in user_by_name and user_by_name[uname]["password"] == pword:
+            st.session_state.logged_in = True
+            st.session_state.uname = uname
+            st.session_state.id = user_by_name[uname]["id"]
+            st.session_state.role = user_by_name[uname]["role"]
+
+            if st.session_state.role in ["Admin", "Staff"]:
+                st.switch_page("pages/dashboard.py")
+            else:
+                st.switch_page("pages/event.py")
+        else:
+            st.error("Login gagal! silahkan coba kembali.")
 
 if __name__ == '__main__':
     main()
